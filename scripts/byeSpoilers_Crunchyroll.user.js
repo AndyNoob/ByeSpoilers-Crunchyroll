@@ -103,7 +103,7 @@ let titleIntervals = {};
 const cssSelectorList = {
     "THUMBNAILS": {
         "EP-IMG_HOME-CONT-WATCH_ANIME-LIST_EP-SEE-MORE-POP": {
-            selector: '.card figure',
+            selector: '.card figure, [data-t="continue-watching-btn"] span span',
             blurAmount: 20,
             blurActive: true,
             modifyActive: false
@@ -121,7 +121,7 @@ const cssSelectorList = {
             modifyActive: false
         },
         "EP-IMG_ANIME-INIT": {
-            selector: '.up-next-section figure',
+            selector: '.up-next-section figure, .playable-card__title-link--96psl',
             blurAmount: 20,
             blurActive: true,
             modifyActive: false
