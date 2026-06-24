@@ -59,19 +59,24 @@ const USER_CONFIG = {
     // /watch: Main Title, Next/Previous Episode, See More Episodes (Side and PopUp)
     MODIFY_INSITE_EPISODE_TITLES: true,
 
-    // true: Modify episodes title to "Anime E# - Watch on Crunchyroll" from the tab of your browser. 
+    // true: Modify episodes title to "Anime E# - Watch on Crunchyroll" from the tab of your browser.
     MODIFY_DOCTITLE_EPISODE_TITLE: true,
 
     // true: Modify episodes title when hovering over certain elements of the page to "(S#) E# - [Title Censored]":
     // /home: Continue Watching Grid
     // /watchlist: Grid of Episodes (Has to be fixed)
     // /history: Grid of Episodes
-    // /series: Last Episode, Grid of Episodes 
+    // /series: Last Episode, Grid of Episodes
     // /watch: Next/Previous Episode, See More Episodes (Side and PopUp)
     MODIFY_TOOLTIPS: true,
 
     // true: Modify URL (replaces it) if episode URL detected. WARNING: This will modify your browser history.
     MODIFY_URL_EPISODE_TITLE: true,
+
+    // this only works when MODIFY_URL_EPISODE_TITLE is true
+    // true: the format of URL will be appended with episode "-(E#)"
+    // false: the format of URL will be appended with "-0"
+    SHOW_EPISODE_COUNT_IN_URL: false,
 
     // true: Blur episode description on the following pages:
     // /home: Continue Watching Grid (Hover)
@@ -110,7 +115,7 @@ const cssSelectorList = {
             modifyActive: false
         },
         "EP-IMG_EP-NEXT_EP-PREV_EP-SEE-MORE-SIDE": {
-            selector: '[data-t="playable-card-mini"] figure',
+            selector: '[data-t="playable-card-mini"] h3',
             blurAmount: 20,
             blurActive: true,
             modifyActive: false
@@ -200,7 +205,7 @@ const langList_episodeRegexList = {
     "ru": /смотреть на Crunchyroll$/,
     "hi": /क्रंचीरोल पर देखें$/
 }
-// CSS just for bluring/hiding elements 
+// CSS just for bluring/hiding elements
 function concatStyleCSS() {
     debugEnable && console.log(USER_CONFIG.BLUR_EPISODE_THUMBNAILS ? "BLUR_EPISODE_THUMBNAILS: ON" : "BLUR_EPISODE_THUMBNAILS: OFF");      
     if (USER_CONFIG.BLUR_EPISODE_THUMBNAILS) {
@@ -260,11 +265,22 @@ function getEpisodeTitleFromEpisodeSite() {
 // Censor the URL only on episode pages
 function censorUrl() {
     let [episodeNumber, episodeTitle, seriesName] = getEpisodeTitleFromEpisodeSite();
-    debugEnable && console.log(`[censorUrl]: New title: censored-${seriesName.replace(/ /g, "_")}-${episodeNumber}`);
-    window.history.replaceState(null, '', `censored-${seriesName.replace(/ /g, "_")}-${episodeNumber}`);
+
+    const safeName = seriesName
+      .replace(/ /g, '_')
+      .replace(/[^a-zA-Z0-9_\-]/g, '');
+
+    // Grab everything up to and including the slug, e.g. /watch/GEVUZ47WK/
+    const slugBase = window.location.pathname.replace(/\/[^/]*$/, '/');
+
+    const censoredPath = `${slugBase}censored-${safeName}-${USER_CONFIG.SHOW_EPISODE_COUNT_IN_URL ? episodeNumber : 0}`;
+
+    debugEnable && console.log(`[censorUrl]: New title: ${censoredPath}`);
+    window.history.replaceState(null, '', censoredPath);
+
     urlCensored = true;
     debugEnable && console.log("[censorUrl]: URL censored");
-    
+
     if (docTitleCensored && titleCensored) {
         document.documentElement.style.filter = 'none';
     }
