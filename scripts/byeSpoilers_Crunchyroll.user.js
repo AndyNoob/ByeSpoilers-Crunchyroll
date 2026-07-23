@@ -25,18 +25,18 @@
 // USER CONFIGS BEGIN
 const debugEnable = false; // In order to see what's happening in the script, set this to true. It will log messages to the console.
 const USER_CONFIG = {
-    // true: Fetch the JSON file instead of using the resource (default is false), 
+    // true: Fetch the JSON file instead of using the resource (default is false),
     // this is works together with SKIP_EPISODE_TITLES
-    // Tampermonkey has trouble with GM_getResourceText, so it's better to use fetch 
+    // Tampermonkey has trouble with GM_getResourceText, so it's better to use fetch
     // (just try with false first and if it doesn't work, set it to true)
-    // Violentmonkey supports GM_getResourceText, so it's better to use it, to avoid 
+    // Violentmonkey supports GM_getResourceText, so it's better to use it, to avoid
     // downloading the file every time, however, in this initial phase could be better
     // considering that the file will be updated frequently
-    FETCH_INSTEAD_OF_RESOURCE: false, 
+    FETCH_INSTEAD_OF_RESOURCE: false,
     // true: Skip in-video episode titles (in development, default is false)
-    SKIP_EPISODE_TITLES: false, 
+    SKIP_EPISODE_TITLES: false,
     // true: Blur episode thumbnails on the following pages:
-    // /home: Continue Watching Grid, Watchlist Grid (Hover), 
+    // /home: Continue Watching Grid, Watchlist Grid (Hover),
     // /watchlist: Grid of Episodes (Hover)
     // /history: Grid of Episodes
     // /series: Last Episode, Grid of Episodes
@@ -44,7 +44,7 @@ const USER_CONFIG = {
     BLUR_EPISODE_THUMBNAILS: true,
 
     // true: Blur episodes title on the following pages:
-    // /home: Continue Watching Grid, Watchlist Grid (Hover), 
+    // /home: Continue Watching Grid, Watchlist Grid (Hover),
     // /watchlist: Grid of Episodes (Hover)
     // /history: Grid of Episodes
     // /series: Last Episode, Grid of Episodes
@@ -103,7 +103,7 @@ let titleIntervals = {};
 const cssSelectorList = {
     "THUMBNAILS": {
         "EP-IMG_HOME-CONT-WATCH_ANIME-LIST_EP-SEE-MORE-POP": {
-            selector: '.card figure, [data-t="continue-watching-btn"] span span',
+            selector: '.card figure, [data-t="continue-watching-btn"] span span, [data-t="episode-title"], [data-t="play-button"], [data-t="meta-info"], h1.title',
             blurAmount: 20,
             blurActive: true,
             modifyActive: false
@@ -207,7 +207,7 @@ const langList_episodeRegexList = {
 }
 // CSS just for bluring/hiding elements
 function concatStyleCSS() {
-    debugEnable && console.log(USER_CONFIG.BLUR_EPISODE_THUMBNAILS ? "BLUR_EPISODE_THUMBNAILS: ON" : "BLUR_EPISODE_THUMBNAILS: OFF");      
+    debugEnable && console.log(USER_CONFIG.BLUR_EPISODE_THUMBNAILS ? "BLUR_EPISODE_THUMBNAILS: ON" : "BLUR_EPISODE_THUMBNAILS: OFF");
     if (USER_CONFIG.BLUR_EPISODE_THUMBNAILS) {
         for (let key in cssSelectorList["THUMBNAILS"]) {
             let item = cssSelectorList["THUMBNAILS"][key];
@@ -276,7 +276,8 @@ function censorUrl() {
     const censoredPath = `${slugBase}censored-${safeName}-${USER_CONFIG.SHOW_EPISODE_COUNT_IN_URL ? episodeNumber : 0}`;
 
     debugEnable && console.log(`[censorUrl]: New title: ${censoredPath}`);
-    window.history.replaceState(null, '', censoredPath);
+    if (!location.href.includes(censoredPath))
+        window.history.replaceState(null, '', censoredPath);
 
     urlCensored = true;
     debugEnable && console.log("[censorUrl]: URL censored");
@@ -316,10 +317,10 @@ function censorDocTitle() {
 // Censor tooltips with episode titles (exlusion made on mainLogic for watchlist page)
 function censorTooltips() {
     const tooltipTitles = document.querySelectorAll(
-        '.card div a[title], ' + // TOOLTIPS_HOME-CONT-WATCH_ANIME-LIST_EP-SEE-MORE-POP
-        '[data-t="playable-card-mini"] a[title], ' + //TOOLTIPS_EP-NEXT_EP-PREV_EP-SEE-MORE-SIDE
-        '.erc-my-lists-item a[title], ' + //TOOLTIPS_WATCHLIST_HISTORY
-        '.erc-series-hero a[title] '  //TOOLTIPS_SERIES
+      '.card div a[title], ' + // TOOLTIPS_HOME-CONT-WATCH_ANIME-LIST_EP-SEE-MORE-POP
+      '[data-t="playable-card-mini"] a[title], ' + //TOOLTIPS_EP-NEXT_EP-PREV_EP-SEE-MORE-SIDE
+      '.erc-my-lists-item a[title], ' + //TOOLTIPS_WATCHLIST_HISTORY
+      '.erc-series-hero a[title] '  //TOOLTIPS_SERIES
     );
     if (tooltipTitles.length === 0) {
         debugEnable && console.log("[censorTooltips]: No elements found with title attribute");
@@ -394,7 +395,7 @@ function censorTitleGeneric(selector) {
         const content = element.textContent;
         if (content.includes("[Title Censored]")) {
             debugEnable && console.log("[censorTitleGeneric]: Title already censored");
-            return; 
+            return;
         }
         const parts = content.split(" - ");
         let newContent = parts.length > 1 ? parts[0] + " - [Title Censored]" : "[Title Censored]";
@@ -425,7 +426,7 @@ function mainLogic() {
     let notLogged = !isLogged();
     let notHomeContinueWatchingOnHomePage = isHomePage() && !homeContinueWatching;
     let notHistoryListSiteOnHistoryPage = isHistoryPage() && !historyListSite;
-    // If not logged (no censorable elements) or not home continue watching on home page (no censorable elements) 
+    // If not logged (no censorable elements) or not home continue watching on home page (no censorable elements)
     // or not history list site on history page (no censorable elements), then remove blur effect
     debugEnable && console.log("[mainLogic]: Has to remove blur since nothing detected?\nNot logged: ", notLogged, "\nnot home continue watching on home page: ", notHomeContinueWatchingOnHomePage, "\nnot history list site on history page: ", notHistoryListSiteOnHistoryPage);
     if (notLogged || notHomeContinueWatchingOnHomePage || notHistoryListSiteOnHistoryPage) {
@@ -456,15 +457,15 @@ function mainLogic() {
     }
     // Makes sure that blur effect is removed when all censoring is done (if censoring wasn't needed, it's removed before)
     if  (
-            (isHomePage() && (USER_CONFIG.MODIFY_INSITE_EPISODE_TITLES ? titleCensored : true)) ||
-            (isEpisodePage() && (USER_CONFIG.MODIFY_INSITE_EPISODE_TITLES ? titleCensored : true) && 
-                                (USER_CONFIG.MODIFY_DOCTITLE_EPISODE_TITLE ? docTitleCensored : true) &&
-                                (USER_CONFIG.MODIFY_URL_EPISODE_TITLE ? urlCensored : true)) ||
-            (isSeriesPage() && (USER_CONFIG.MODIFY_INSITE_EPISODE_TITLES ? titleCensored : true)) ||
-            (isHistoryPage() && (USER_CONFIG.MODIFY_INSITE_EPISODE_TITLES ? titleCensored : true)) ||
-            (isWatchlistPage()) ||
-            (isOtherPage())
-        ){
+      (isHomePage() && (USER_CONFIG.MODIFY_INSITE_EPISODE_TITLES ? titleCensored : true)) ||
+      (isEpisodePage() && (USER_CONFIG.MODIFY_INSITE_EPISODE_TITLES ? titleCensored : true) &&
+        (USER_CONFIG.MODIFY_DOCTITLE_EPISODE_TITLE ? docTitleCensored : true) &&
+        (USER_CONFIG.MODIFY_URL_EPISODE_TITLE ? urlCensored : true)) ||
+      (isSeriesPage() && (USER_CONFIG.MODIFY_INSITE_EPISODE_TITLES ? titleCensored : true)) ||
+      (isHistoryPage() && (USER_CONFIG.MODIFY_INSITE_EPISODE_TITLES ? titleCensored : true)) ||
+      (isWatchlistPage()) ||
+      (isOtherPage())
+    ){
         document.documentElement.style.filter = 'blur(0px)';
         debugEnable && console.log("[mainLogic]: All needed censorship done. Removing blur effect");
     }
@@ -491,10 +492,10 @@ function mainLogic() {
     const targetToolTip = document.querySelector('.app-body-wrapper');
     if (USER_CONFIG.MODIFY_TOOLTIPS) {
         debugEnable && onsole.log("[mainLogic-censorToolTips]: USER_CONFIG.MODIFY_TOOLTIPS is enabled.");
-        
+
         if (targetToolTip) {
             debugEnable && console.log("[mainLogic-censorToolTips]: Target tooltip general element (.app-body-wrapper) found.");
-            
+
             if (!isWatchlistPage()) {
                 debugEnable && console.log("[mainLogic-censorToolTips]: Not on the watchlist page. Censoring tooltips.");
                 censorTooltips();
@@ -539,7 +540,7 @@ function mainLogic() {
     } else {
         debugEnable && console.log("[mainLogic-EP Page exlusive]: Not on episode page.");
     }
-    // Verifies conditions to censor episode titles on whatever page is needed. 
+    // Verifies conditions to censor episode titles on whatever page is needed.
     // modifyActive controls if the title should be censored or not to have a more flexible control (advanced)
     if (USER_CONFIG.MODIFY_INSITE_EPISODE_TITLES) {
         debugEnable && console.log("[mainLogic-censorTitleGeneric]: USER_CONFIG.MODIFY_INSITE_EPISODE_TITLES is enabled.");
@@ -548,7 +549,7 @@ function mainLogic() {
             if (config["modifyActive"]) {
                 const selectorString = config["selector"];
                 const targetPlayerTitle = document.querySelector(selectorString);
-    
+
                 if (targetPlayerTitle) {
                     debugEnable && console.log(`[mainLogic-censorTitleGeneric]: Censoring title for selector: ${selectorString}`);
                     censorTitleGeneric(selectorString);
@@ -562,7 +563,7 @@ function mainLogic() {
     } else {
         debugEnable && console.log("[mainLogic-censorTitleGeneric]: USER_CONFIG.MODIFY_INSITE_EPISODE_TITLES is not enabled.");
     }
-    
+
     debugEnable && console.log("[mainLogic]: END");
 }
 
@@ -584,17 +585,17 @@ function timeToSeconds(time) {
 function loadJSON() {
     if (USER_CONFIG.FETCH_INSTEAD_OF_RESOURCE) {
         fetch('https://raw.githubusercontent.com/zAlfok/ByeSpoilers-Crunchyroll/master/scripts/crunchyroll_titles_intervals_compactSimplified.json')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                titleIntervals = data; // Asigna los datos a la variable global
-                console.log('Data loaded successfully:', titleIntervals);
-            })
-            .catch(error => console.error('Error loading JSON:', error));
+          .then(response => {
+              if (!response.ok) {
+                  throw new Error('Network response was not ok');
+              }
+              return response.json();
+          })
+          .then(data => {
+              titleIntervals = data; // Asigna los datos a la variable global
+              console.log('Data loaded successfully:', titleIntervals);
+          })
+          .catch(error => console.error('Error loading JSON:', error));
     } else {
         try {
             const jsonText = GM_getResourceText("TITLE_INTERVALS_JSON");
@@ -603,27 +604,27 @@ function loadJSON() {
         } catch (error) {
             console.error("[loadJSON]: Error loading title intervals:", error, "\nTry to set FETCH_INSTEAD_OF_RESOURCE to true in the USER_CONFIG section.\nTrying to fetch the JSON file instead.");
             fetch('https://raw.githubusercontent.com/zAlfok/ByeSpoilers-Crunchyroll/master/scripts/crunchyroll_titles_intervals_compactSimplified.json')
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    titleIntervals = data; // Asigna los datos a la variable global
-                    console.log('Data loaded successfully:', titleIntervals);
-                })
-                .catch(error => console.error('Error loading JSON:', error));
+              .then(response => {
+                  if (!response.ok) {
+                      throw new Error('Network response was not ok');
+                  }
+                  return response.json();
+              })
+              .then(data => {
+                  titleIntervals = data; // Asigna los datos a la variable global
+                  console.log('Data loaded successfully:', titleIntervals);
+              })
+              .catch(error => console.error('Error loading JSON:', error));
         }
     }
-    }
+}
 
 function initializeMainPage() {
     // Listens to messages from the player iframe
     window.addEventListener('message', function(event) {
         if (event.origin !== "https://static.crunchyroll.com") return;
         debugEnable && console.log("[initializeMainPage]: Main page received message:", event.data);
-        
+
         // If the message contains the current time of the player do the following
         if (event.data.currentTime !== undefined) {
             const iframe = document.querySelector('iframe[src^="https://static.crunchyroll.com"]');
@@ -633,7 +634,7 @@ function initializeMainPage() {
             }
             const currentTime = event.data.currentTime;
             debugEnable && console.log("[initializeMainPage]: Current time:", currentTime);
-            
+
             [episodeNumberStr, episodeTitle, seriesName] = getEpisodeTitleFromEpisodeSite();
             episodeNumberInt = extractEpisodeNumber(episodeNumberStr);
             if (titleIntervals[seriesName] && titleIntervals[seriesName][`${episodeNumberInt}`]) {
@@ -647,7 +648,7 @@ function initializeMainPage() {
                     // If iframe is found, send a message to the player to skip the interval
                     iframe.contentWindow.postMessage({action: 'setCurrentTime', time: endTime+0.5}, '*');
 
-                } 
+                }
             }
 
         }
@@ -705,7 +706,7 @@ try {
         } catch (e) {
             debugEnable && console.error('[ByeSpoilers - Crunchyroll Script] DEBUG: CSS Error:', e);
         }
-        // When the page is loaded, apply the main logic and set a MutationObserver to 
+        // When the page is loaded, apply the main logic and set a MutationObserver to
         // apply censorship again when the DOM changes (because of SPA behavior)
         window.addEventListener('load', function () {
             debugEnable && console.log("[Bye Spoilers - Crunchyroll]: Window loaded, executing mainLogic after 0ms timeout");
