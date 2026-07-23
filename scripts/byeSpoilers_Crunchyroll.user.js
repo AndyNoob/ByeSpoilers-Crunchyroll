@@ -173,7 +173,7 @@ const cssSelectorList = {
   },
   "DESCRIPTIONS": {
     "EP-DESCR_PLAYER_EPISODE": {
-      selector: '.expandable-section__wrapper--G-ttI p',
+      selector: '.expandable-section__wrapper--G-ttI p, [data-t="next-episode"]',
       blurAmount: 20,
       blurActive: true,
       modifyActive: false
