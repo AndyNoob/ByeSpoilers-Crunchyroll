@@ -15,8 +15,8 @@
 // @resource       TITLE_INTERVALS_JSON  https://github.com/zAlfok/ByeSpoilers-Crunchyroll/raw/master/scripts/crunchyroll_titles_intervals_compactSimplified.json
 // @grant          GM_getResourceText
 // @homepageURL    https://github.com/zAlfok/ByeSpoilers-Crunchyroll
-// @downloadURL    https://github.com/zAlfok/ByeSpoilers-Crunchyroll/raw/master/scripts/byeSpoilers_Crunchyroll.user.js
-// @updateURL      https://github.com/zAlfok/ByeSpoilers-Crunchyroll/raw/master/scripts/byeSpoilers_Crunchyroll.user.js
+// @downloadURL    https://github.com/AndyNoob/ByeSpoilers-Crunchyroll/raw/refs/heads/my-own-branch/scripts/byeSpoilers_Crunchyroll.user.js
+// @updateURL      https://github.com/AndyNoob/ByeSpoilers-Crunchyroll/raw/refs/heads/my-own-branch/scripts/byeSpoilers_Crunchyroll.user.js
 // @supportURL     https://github.com/zAlfok/ByeSpoilers-Crunchyroll/issues
 // ==/UserScript==
 
