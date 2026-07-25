@@ -49,7 +49,7 @@ const USER_CONFIG = {
   // /history: Grid of Episodes
   // /series: Last Episode, Grid of Episodes
   // /watch: Next/Previous Episode, See More Episodes (Side and PopUp)
-  BLUR_EPISODE_TITLES: false,
+  BLUR_EPISODE_TITLES: true,
 
   // true: Modify episodes title to "(S#) E# - [Title Censored]" on the following pages:
   // /home: Continue Watching Grid, Continue Watching Grid (Hover), Watchlist Grid (if modifyActive is true, default is false since it's not necessary)
@@ -121,7 +121,7 @@ const cssSelectorList = {
       modifyActive: false
     },
     "EP-IMG_ANIME-INIT": {
-      selector: '.up-next-section figure, .playable-card__title-link--96psl',
+      selector: '.up-next-section figure, .playable-card__title-link--96psl, .episode-list, .extended-option__description--PjmSQ',
       blurAmount: 20,
       blurActive: true,
       modifyActive: false
@@ -240,6 +240,8 @@ function concatStyleCSS() {
     cssE = cssE + '.erc-user-actions > :first-child, .banner-wrapper, .button-wrapper { display: none; }';
     // cssE = cssE + 'vsc-initialized { height: 0%};'; // Not 0% in all cases, it's done on mainLogic, kept here for reference
   }
+
+  console.log(cssE);
 }
 
 // Gets the serie's name and the episode's number and title from the episode page
@@ -716,7 +718,7 @@ try {
       var $newStyleE = document.createElement('style');
       var cssNodeE = document.createTextNode(cssE);
       $newStyleE.appendChild(cssNodeE);
-      document.head.appendChild($newStyleE);
+      (document.head || document.documentElement).appendChild($newStyleE);
       debugEnable && console.log('[ByeSpoilers - Crunchyroll Script]: CSS Applied');
     } catch (e) {
       debugEnable && console.error('[ByeSpoilers - Crunchyroll Script] DEBUG: CSS Error:', e);
