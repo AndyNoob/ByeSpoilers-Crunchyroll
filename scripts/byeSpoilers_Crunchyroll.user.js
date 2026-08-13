@@ -103,7 +103,7 @@ let titleIntervals = {};
 const cssSelectorList = {
   "THUMBNAILS": {
     "EP-IMG_HOME-CONT-WATCH_ANIME-LIST_EP-SEE-MORE-POP": {
-      selector: '.card figure, [data-t="continue-watching-btn"] span span, [data-t="episode-title"], [data-t="play-button"], [data-t="meta-info"], h1.title',
+      selector: '.card figure, [data-t="continue-watching-btn"] span span, [data-t="episode-title"], [data-t="play-button"], [data-t="meta-info"], h1.title, [data-t="start-watching-btn"]',
       blurAmount: 20,
       blurActive: true,
       modifyActive: false
